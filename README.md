@@ -2,6 +2,8 @@
 
 NetFlix UI Clone using React , Redux , Tailwind and FireBase for Authentication . Integrated GPT API's for better search suggestions.
 
+# Description
+
 # Getting Started with Create React App
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
