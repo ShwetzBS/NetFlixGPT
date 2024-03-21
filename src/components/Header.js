@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { adduser, removeuser } from "../utils/userslice";
 import { useDispatch } from "react-redux";
+import { NETFLIX_LOGO } from "../utils/constant";
 
 import { onAuthStateChanged } from "firebase/auth";
 import React, { useEffect } from "react";
@@ -14,24 +15,24 @@ const Header = () => {
   const user = useSelector((store) => store.user);
 
   useEffect(() => {
-    onAuthStateChanged(
-      auth,
-      (user) => {
-        if (user) {
-          const { uid, displayName, email, photoURL } = user;
+    //onAuthchanged returns an unsubscribe function
+    const unsubscriibe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        const { uid, displayName, email, photoURL } = user;
 
-          dispatch(adduser({ uid, displayName, email, photoURL }));
-          navigate("/browser");
-        } else {
-          // User is signed out
+        dispatch(adduser({ uid, displayName, email, photoURL }));
+        navigate("/browser");
+      } else {
+        // User is signed out
+        console.log("came here");
+        dispatch(removeuser());
+        navigate("/");
+      }
+    });
 
-          dispatch(removeuser());
-          navigate("/");
-        }
-      },
-      []
-    );
-  });
+    //Called when component unmounts
+    return () => unsubscriibe();
+  }, []);
 
   const handleSignOut = () => {
     signOut(auth)
@@ -44,11 +45,7 @@ const Header = () => {
   };
   return (
     <div className="absolute mt-6 ml-2 bg-gradient-to-b from-black z-10 w-screen flex justify-between">
-      <img
-        className="w-48 "
-        src="https://cdn.cookielaw.org/logos/dd6b162f-1a32-456a-9cfe-897231c7763c/4345ea78-053c-46d2-b11e-09adaef973dc/Netflix_Logo_PMS.png"
-        alt="netflixlogo"
-      />
+      <img className="w-48 " src={NETFLIX_LOGO} alt="netflixlogo" />
       {user && (
         <div className="flex p-4">
           <img className="w-12 h-12" alt="usericon" src={user?.photoURL}></img>

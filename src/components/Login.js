@@ -7,6 +7,7 @@ import {
   signInWithEmailAndPassword,
   updateProfile,
 } from "firebase/auth";
+import { USER_PHOTO, NETFLIX_BG } from "../utils/constant";
 
 import { useDispatch } from "react-redux";
 import { adduser } from "../utils/userslice";
@@ -17,7 +18,11 @@ const Login = () => {
   const [issignin, setsignin] = useState(true);
   const [errorMessage, setErrorMessage] = useState("");
   const toggleSignInForm = () => {
-    setsignin(!issignin);
+    if (issignin === true) {
+      setsignin(false);
+    } else if (issignin === false) {
+      setsignin(true);
+    }
   };
   const email = useRef(null);
   const password = useRef(null);
@@ -30,59 +35,53 @@ const Login = () => {
       password.current.value
     );
     validation ? setErrorMessage(validation) : setErrorMessage("");
+    if (validation) return;
 
-    if (!validation) {
-      //Check if sign in or sign up form
-      if (!issignin) {
-        //Sign Up logic . Create user
-        createUserWithEmailAndPassword(
-          auth,
-          email.current.value,
-          password.current.value
-        )
-          .then((userCredential) => {
-            // Signed in
-            const user = userCredential.user;
-            console.log(user);
-            updateProfile(user, {
-              displayName: userName.current.value,
-              photoURL: "https://example.com/jane-q-user/profile.jpg",
+    //Check if sign in or sign up form
+    if (!issignin) {
+      //Sign Up logic . Create user
+      createUserWithEmailAndPassword(
+        auth,
+        email.current.value,
+        password.current.value
+      )
+        .then((userCredential) => {
+          // Signed in
+          const user = userCredential.user;
+          console.log(user);
+          updateProfile(user, {
+            displayName: userName.current.value,
+            photoURL: USER_PHOTO, //Its not a JSX hence no need for {}
+          })
+            .then(() => {
+              //Dispatch action to edux to save user details.
+
+              const { uid, displayName, email, photoURL } = auth.currentUser;
+              dispatch(adduser({ uid, displayName, email, photoURL }));
+              //Navigate to browse page
             })
-              .then(() => {
-                //Dispatch action to edux to save user details.
+            .catch((error) => {
+              setErrorMessage(error.message);
+            });
+        })
+        .catch((error) => {
+          setErrorMessage("Unable to sign Up ...try again ");
+        });
+    } else {
+      //Sign In logic
 
-                const { uid, displayName, email, photoURL } = auth.currentUser;
-                dispatch(adduser({ uid, displayName, email, photoURL }));
-                //Navigate to browse page
-              })
-              .catch((error) => {
-                setErrorMessage(error.message);
-              });
-          })
-          .catch((error) => {
-            const errorCode = error.code;
-            const errorMessage = error.message;
-            setErrorMessage("Unable to sign Up ...try again ");
-          });
-      } else {
-        //Sign In logic
-
-        signInWithEmailAndPassword(
-          auth,
-          email.current.value,
-          password.current.value
-        )
-          .then((userCredential) => {
-            // Signed in
-            const user = userCredential.user;
-            //Navigate to browse page
-          })
-          .catch((error) => {
-            const errorCode = error.code;
-            const errorMessage = error.message;
-            setErrorMessage("Unable to log In");
-          });
-      }
+      signInWithEmailAndPassword(
+        auth,
+        email.current.value,
+        password.current.value
+      )
+        .then((userCredential) => {
+          // Signed in
+          //Navigate to browse page
+        })
+        .catch((error) => {
+          setErrorMessage("Unable to log In");
+        });
     }
   };
 
@@ -90,10 +89,7 @@ const Login = () => {
     <div>
       <Header />
       <div className="absolute">
-        <img
-          src="https://user-images.githubusercontent.com/33485020/108069438-5ee79d80-7089-11eb-8264-08fdda7e0d11.jpg"
-          alt="netflixbg"
-        />
+        <img src={NETFLIX_BG} alt="netflixbg" />
       </div>
       <form
         className="w-3/12 absolute p-12 bg-black my-36 mx-auto right-0 left-0 text-white bg-opacity-80"
@@ -111,11 +107,6 @@ const Login = () => {
               className="p-4 my-4 w-full bg-gray-800  rounded-lg"
               placeholder="Full Name"
             />
-            {/* <input
-              type="text"
-              className="p-4 my-4 w-full bg-gray-800  rounded-lg"
-              placeholder="Phone Number "
-            /> */}
           </div>
         )}
         <input
