@@ -3,8 +3,12 @@ import Header from "./Header.js";
 import useNowPlayingMovies from "../CustomHooks/useNowPlayingMovies.js";
 import MainMovieContainer from "./MainMovieContainer.js";
 import SecondaryMovieContainer from "./SecondaryMovieContainer.js";
+import usePopularMovies from "../CustomHooks/usePopularMovies.js";
+
 const Browse = () => {
+  //Fetching movies and updating the store
   useNowPlayingMovies();
+  usePopularMovies();
 
   return (
     <div>
@@ -17,6 +21,8 @@ const Browse = () => {
         
      
      */}
+      <MainMovieContainer />
+      <SecondaryMovieContainer />
     </div>
   );
 };
